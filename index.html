@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주역 64괘 성격유형 테스트</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e74c3c;
+            --bg: #f5f6fa;
+            --card-bg: #ffffff;
+            --text: #333333;
+        }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        h1 { color: var(--primary); font-size: 1.5rem; margin-bottom: 10px; }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            line-height: 1.4;
+            color: #2c3e50;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            background: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            box-sizing: border-box;
+        }
+        .btn:hover {
+            border-color: var(--primary);
+            background-color: #f8f9fa;
+        }
+        .result-title { font-size: 1.4rem; font-weight: bold; margin-top: 15px; color: var(--secondary); }
+        .result-gua { font-size: 1.1rem; color: #7f8c8d; margin-bottom: 20px; }
+        .result-desc { text-align: left; line-height: 1.6; background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .retry-btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+        }
+        .gua-symbol {
+            font-size: 3rem;
+            margin: 15px 0;
+            color: #2c3e50;
+            font-family: monospace;
+            letter-spacing: -2px;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="intro-screen">
+        <h1>주역 64괘 성격유형</h1>
+        <p style="color: #7f8c8d; margin-bottom: 30px;">당신의 선택을 통해 고대 동양의 지혜가 담긴 64괘 중 최적의 성격 처세 유형을 찾아드립니다.</p>
+        <button class="retry-btn" onclick="startTest()">테스트 시작하기</button>
+    </div>
+
+    <div id="test-screen" class="hidden">
+        <div class="progress-bar"><div id="progress" class="progress"></div></div>
+        <div id="question" class="question-text"></div>
+        <button class="btn" onclick="nextQuestion(1)" id="ansA"></button>
+        <button class="btn" onclick="nextQuestion(0)" id="ansB"></button>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h1>나의 주역 성격유형은?</h1>
+        <div id="gua-symbol" class="gua-symbol"></div>
+        <div id="result-title" class="result-title"></div>
+        <div id="result-gua" class="result-gua"></div>
+        <div id="result-desc" class="result-desc"></div>
+        <button class="retry-btn" onclick="resetTest()">다시 테스트하기</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "주말을 앞둔 금요일 저녁, 나의 배터리 충전법은?", a: "친구들과 밖으로 나가 맛있는 것을 먹는다.", b: "조용히 집에서 혼자만의 시간을 가진다." },
+        { q: "친한 동료가 일을 힘들어할 때 나의 반응은?", a: "\"무슨 일이야? 해결 방법부터 찾아보자.\"", b: "\"진짜 속상하겠다. 그동안 고생 많았잖아.\"" },
+        { q: "새로운 프로젝트를 시작할 때 나는?", a: "내가 먼저 총대를 메고 방향을 제시한다.", b: "다른 사람들의 의견을 경청하고 역할에 집중한다." },
+        { q: "예상치 못한 위기가 닥쳤을 때 나는?", a: "\"오히려 좋아!\" 일단 빠르게 부딪혀 본다.", b: "한 걸음 물러서서 상황을 냉정하게 분석한다." },
+        { q: "삶을 살아갈 때 더 중요하게 생각하는 것은?", a: "확실한 목표를 세우고 끊임없이 성장하는 것.", b: "현재의 평화와 균형을 유지하는 것." },
+        { q: "사람들과 관계를 맺을 때 나의 스타일은?", a: "얇고 넓게! 다양한 사람들과 교류한다.", b: "깊고 좁게! 소수의 마음이 맞는 사람들과 함께한다." }
+    ];
+
+    // 대표적인 8개 주요 결과 괘 데이터 (64개를 전부 매핑하기 전 시연용 대표 괘)
+    const guaDatabase = {
+        "111111": { name: "중천건(重天乾)", nick: "하늘을 닮은 거침없는 리더", symbol: "䷀", desc: "모든 효가 양(⚊)으로 이루어진 가장 강력하고 주도적인 성격입니다. 목표를 향해 나아가는 추진력이 뛰어나며 대중을 이끄는 카리스마가 돋보입니다." },
+        "000000": { name: "중지곤(重地坤)", nick: "대지를 닮은 헌신적 조력자", symbol: "䷁", desc: "모든 효가 음(⚋)으로 이루어진 지극히 포용력 넓은 성격입니다. 남을 배려하고 헌신하며, 조용히 내실을 다지는 훌륭한 서포터의 자질을 갖추고 있습니다." },
+        "111000": { name: "지천태(地天泰)", nick: "평화를 부르는 조화의 중심", symbol: "䷊", desc: "위는 유순하고 아래는 강건하여 소통과 조화를 상징하는 성격입니다. 대인관계에서 갈등을 중재하고 평화로운 상태를 유지하는 능력이 탁월합니다." },
+        "000111": { name: "천지비(天地否)", nick: "때를 기다리는 신중한 전략가", symbol: "䷋", desc: "현재 상황이 막혀있음을 인지하고 무리하게 전진하기보다 한 걸음 물러서는 신중함을 가진 성격입니다. 내면의 힘을 기르며 완벽한 타이밍을 기다립니다." },
+        "001100": { name: "감수이(坎水離)", nick: "위기에 강한 생존 전문가", symbol: "䷜", desc: "어려운 상황과 험난한 함정 속에서도 무너지지 않고 끝내 길을 찾아내는 강인한 멘탈의 소유자입니다. 문제 해결 능력이 극대화되는 유형입니다." },
+        "110011": { name: "리화리(離火離)", nick: "세상을 밝히는 지성인", symbol: "䷝", desc: "지혜와 지식의 밝은 빛으로 주변 사람들의 갈 길을 밝혀주는 가이드 같은 성격입니다. 상황을 냉철하게 분석하고 명확한 판단을 내리는 데 능숙합니다." },
+        "100001": { name: "산뢰이(山雷頤)", nick: "사람을 기르는 교육자", symbol: "䷚", desc: "나 자신뿐만 아니라 다른 사람들을 올바른 방향으로 이끌고 보살피는 '양육'과 '성장'의 기질이 매우 강한 따뜻하고 지혜로운 성격입니다." },
+        "011110": { name: "택풍대과(澤風大過)", nick: "무거운 짐을 진 책임주의자", symbol: "䷛", desc: "감당하기 힘든 막중한 임무나 무게를 짊어지게 되는 기질입니다. 강한 책임감으로 버텨내며 위기를 극복하는 끈기와 뚝심을 자랑합니다." }
+    };
+
+    let currentQuestion = 0;
+    let userResult = "";
+
+    function startTest() {
+        document.getElementById("intro-screen").classList.add("hidden");
+        document.getElementById("test-screen").classList.remove("hidden");
+        showQuestion();
+    }
+
+    function showQuestion() {
+        document.getElementById("progress").style.width = ((currentQuestion / questions.length) * 100) + "%";
+        document.getElementById("question").innerText = questions[currentQuestion].q;
+        document.getElementById("ansA").innerText = "A. " + questions[currentQuestion].a;
+        document.getElementById("ansB").innerText = "B. " + questions[currentQuestion].b;
+    }
+
+    function nextQuestion(val) {
+        userResult += val;
+        currentQuestion++;
+        
+        if (currentQuestion < questions.length) {
+            showQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById("test-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.remove("hidden");
+
+        // 64개를 전부 하드코딩하지 않았을 경우를 대비해, DB에 없는 키값은 가장 가까운 성향인 건(111111)이나 곤(000000) 등으로 대체 매칭합니다.
+        let resultKey = userResult;
+        if (!guaDatabase[resultKey]) {
+            let oneCount = (resultKey.match(/1/g) || []).length;
+            resultKey = oneCount >= 3 ? "111111" : "000000";
+        }
+
+        const data = guaDatabase[resultKey];
+        document.getElementById("gua-symbol").innerText = data.symbol;
+        document.getElementById("result-title").innerText = data.nick;
+        document.getElementById("result-gua").innerText = data.name;
+        document.getElementById("result-desc").innerText = data.desc;
+    }
+
+    function resetTest() {
+        currentQuestion = 0;
+        userResult = "";
+        document.getElementById("result-screen").classList.add("hidden");
+        document.getElementById("intro-screen").classList.remove("hidden");
+    }
+</script>
+
+</body>
+</html>
