@@ -1,7 +1,7 @@
 # I-Ching-64-Hexagrams
 
-##I Ching (Book of Changes) 64 Hexagrams
-乾 (건): The Creative / Force (The Creative)
+##I C hing (Book of Changes) 64 Hexagrams
+## 乾 (건): The Creative / Force (The Creative)
 坤 (곤): The Receptive / Field (The Receptive)
 屯 (둔): Difficulty at the Beginning / Sprouting
 蒙 (몽): Youthful Folly / Enveloping
